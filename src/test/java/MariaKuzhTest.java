@@ -1,4 +1,5 @@
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -137,7 +138,7 @@ public class MariaKuzhTest {
         );
 
         String tempF = temp.getText();
-        String actualResul = tempF.substring((tempF.length()-2)); //метод, кт выводить часть текста 50°F
+        String actualResul = tempF.substring((tempF.length() - 2)); //метод, кт выводить часть текста 50°F
 
         Assert.assertEquals(actualResul, expectedResult);
         Assert.assertTrue(tempF.contains(fTempSymbol)); //содержит ли строка символ
@@ -233,7 +234,7 @@ We also use non-essential cookies to help us improve our services.
 
 
         Assert.assertEquals(driver.findElements( // найти и сравнить количество элементов
-                By.xpath("//ul[@id = 'support-dropdown-menu']/li")).size(),3);
+                By.xpath("//ul[@id = 'support-dropdown-menu']/li")).size(), 3);
 
         WebElement buttonFAQ = driver.findElement(   //найти FAQ
                 By.xpath("//div[@id= 'desktop-menu']//a[@href='/faq']")
@@ -278,11 +279,12 @@ We also use non-essential cookies to help us improve our services.
 
         String url = "https://openweathermap.org/";
         String email = "myk@mail.com";
-
+        String message = "Test";
+        String expectedResultTextCAPTHA = "reCAPTCHA verification failed, please try again.";
 
 
         driver.get(url); //открыть ссылку
-        Thread.sleep(3000);
+        Thread.sleep(10000);
         driver.manage().window().maximize(); //раскрыть полное окно
         Thread.sleep(5000);
 
@@ -300,28 +302,311 @@ We also use non-essential cookies to help us improve our services.
         buttonAskaQuestion.click();
         Thread.sleep(2000);
 
-//        ArrayList<String> tabs2 = new ArrayList<String>(driver.getWindowHandles());
-//        driver.switchTo().window(tabs2.get(2)); //открыть новую вкладку
-//        Thread.sleep(5000);
-//
-//
-//        WebElement firstField = driver.findElement(   //найти первое поле для заполнения
-//                By.xpath("//div[@class ='col-sm-8 hint-question-form']")
-//        );
-//
-//        Thread.sleep(2000);
-//        firstField.click(); //нажать на первое поле
-//        Thread.sleep(2000);
-//        firstField.sendKeys(email); //набрать email
-//        Thread.sleep(2000);
-//
-//        WebElement secondField = driver.findElement(   //найти первое поле для заполнения
-//                By.xpath("//select[@class = 'form-control select required']")
-//        );
-//        Thread.sleep(2000);
-//        secondField.click(); //нажать на второе поле
-//        Thread.sleep(2000);
+        for (String winHandle : driver.getWindowHandles()) {
+            driver.switchTo().window(winHandle); //открыть новую вкладку
+        }
+        Thread.sleep(5000);
+
+
+        WebElement firstField = driver.findElement(   //найти первое поле для заполнения
+                By.xpath("//input[@class = 'form-control string email required']")
+        );
+
+        Thread.sleep(2000);
+        firstField.click(); //нажать на первое поле
+        Thread.sleep(3000);
+        firstField.sendKeys(email); //набрать email
+        Thread.sleep(2000);
+
+        WebElement secondField = driver.findElement(   //найти второе поле для заполнения
+                By.xpath("//select[@class='form-control select required']")
+        );
+        Thread.sleep(2000);
+
+        WebElement selectFieldChoice = driver.findElement( //найти первое первое значение
+                By.xpath("//option[1]"));
+        selectFieldChoice.click();
+        Thread.sleep(2000);
+
+        WebElement thirdField = driver.findElement(   //найти третье поле для заполнения
+                By.xpath("//textarea[@class='form-control text required']")
+        );
+        Thread.sleep(2000);
+
+        thirdField.sendKeys(message); // втавить текст
+        Thread.sleep(2000);
+
+        WebElement buttonClick = driver.findElement(   //найти кнопку submit
+                By.xpath("//input[@type = 'submit'][@class = 'btn btn-default']")
+        );
+        Thread.sleep(2000);
+
+        buttonClick.click();
+        Thread.sleep(2000);
+
+        WebElement reCAPTCHA = driver.findElement(   //найти текст ошибки
+                By.xpath("//div[text() = 'reCAPTCHA verification failed, please try again.']")
+        );
+        Thread.sleep(2000);
+
+        Assert.assertEquals(reCAPTCHA.getText(), expectedResultTextCAPTHA);
 
         driver.quit(); // закрыть сессию
     }
+
+
+    /* TC_11_06
+1.  Открыть базовую ссылку
+2.  Нажать пункт меню Support → Ask a question
+3.  Оставить значение по умолчанию в checkbox Are you an OpenWeather user?
+4. Оставить пустым поле Email
+5. Заполнить поля  Subject, Message
+6. Подтвердить CAPTCHA
+7. Нажать кнопку Submit
+8. Подтвердить, что в поле Email пользователю будет показана ошибка “can't be blank”
+     */
+
+    @Test
+    public void withCAPTCHAnotEmail() throws InterruptedException {
+        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\chromedriver_win32\\chromedriver.exe");
+        WebDriver driver = new ChromeDriver();
+
+        String url = "https://openweathermap.org/";
+        String message = "Test";
+        String expectedResultTextCAPTHA = "can't be blank";
+
+
+        driver.get(url); //открыть ссылку
+        Thread.sleep(10000);
+        driver.manage().window().maximize(); //раскрыть полное окно
+        Thread.sleep(5000);
+
+        WebElement buttonSupport = driver.findElement(   //найти Support
+                By.xpath("//div[@id = 'support-dropdown']")
+        );
+        Thread.sleep(2000);
+        buttonSupport.click();
+        Thread.sleep(2000);
+
+        WebElement buttonAskaQuestion = driver.findElement(   //найти Ask a Question
+                By.xpath("//ul[@class = 'dropdown-menu dropdown-visible']//a[@target= '_blank']")
+        );
+        Thread.sleep(2000);
+        buttonAskaQuestion.click();
+        Thread.sleep(2000);
+
+        for (String winHandle : driver.getWindowHandles()) {
+            driver.switchTo().window(winHandle); //открыть новую вкладку
+        }
+        Thread.sleep(5000);
+
+
+        WebElement secondField = driver.findElement(   //найти второе поле для заполнения
+                By.xpath("//select[@class='form-control select required']")
+        );
+        Thread.sleep(5000);
+
+        WebElement selectFieldChoice = driver.findElement( //найти первое второе значение
+                By.xpath("//option[2]"));
+        selectFieldChoice.click();
+        Thread.sleep(2000);
+
+        WebElement thirdField = driver.findElement(   //найти третье поле для заполнения
+                By.xpath("//textarea[@class='form-control text required']")
+        );
+        Thread.sleep(2000);
+
+        thirdField.sendKeys(message); // вставить текст
+        Thread.sleep(2000);
+
+        String askQuestionWindow = driver.getWindowHandle();
+        driver.switchTo().frame(driver.findElement(By.xpath("//iframe[@title = 'reCAPTCHA']")));
+        Thread.sleep(2000);
+
+        WebElement searchCaptchaElement = driver.findElement(   //найти кнопку CAPTCHA
+                By.xpath("//div[@class = 'rc-anchor-center-container']")
+        );
+        searchCaptchaElement.click();
+        Thread.sleep(20000);
+
+        driver.switchTo().window(askQuestionWindow);
+
+        WebElement buttonClick = driver.findElement(   //найти кнопку submit
+                By.xpath("//input[@type = 'submit'][@class = 'btn btn-default']")
+        );
+        Thread.sleep(2000);
+
+        buttonClick.click();
+        Thread.sleep(2000);
+
+        WebElement searchCantBeeBlankMessage = driver.findElement(   //найти текст ошибки
+                By.xpath("//span[@class = 'help-block']")
+        );
+        Thread.sleep(2000);
+
+        String actualresult = searchCantBeeBlankMessage.getText();
+
+        Assert.assertEquals(actualresult, expectedResultTextCAPTHA);
+
+        driver.quit(); // закрыть сессию
+
+        //капча перестала работать
+    }
+
+    @Test
+    /*TC_11_07
+1.  Открыть базовую ссылку
+2.  Нажать на единицы измерения Imperial: °F, mph
+3.  Нажать на единицы измерения Metric: °C, m/s
+4.  Подтвердить, что в результате этих действий, единицы измерения температуры изменились с F на С*/
+
+    public void changeUnitFromFToC() throws InterruptedException {
+        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\chromedriver_win32\\chromedriver.exe");
+        WebDriver driver = new ChromeDriver();
+
+        String url = "https://openweathermap.org/";
+        String expectedResultC = "°C";
+        String cTempSymbol = "°C";
+
+        driver.get(url); //открыть ссылку
+        Thread.sleep(10000);
+        driver.manage().window().maximize(); //раскрыть полное окно
+        Thread.sleep(2000);
+
+        WebElement elementImperialF = driver.findElement( //найти элемент Imperial: °F
+                By.xpath("//div[text() = 'Imperial: °F, mph']")
+        );
+        elementImperialF.click();
+        Thread.sleep(5000);
+        WebElement elementImperialC = driver.findElement( //найти элемент Imperial: °C
+                By.xpath("//div[text() = 'Metric: °C, m/s']")
+        );
+        Thread.sleep(2000);
+        elementImperialC.click();
+        WebElement temp = driver.findElement(
+                By.xpath("//div[@class = 'current-temp']/span")
+        );
+        Thread.sleep(2000);
+
+        String tempC = temp.getText();
+        String actualResul = tempC.substring((tempC.length() - 2)); //метод, кт выводить часть текста 50°F
+
+        //Assert.assertEquals(actualResul, expectedResultC);
+        Assert.assertTrue(tempC.contains(cTempSymbol)); //содержит ли строка символ
+
+
+        driver.quit(); // закрыть сессию
+    }
+
+    /*TC_11_08
+1.  Открыть базовую ссылку
+2.  Нажать на лого компании
+3.  Дождаться, когда произойдет перезагрузка сайта, и подтвердить, что текущая ссылка не изменилась
+     */
+    @Test
+    public void currentUrl() throws InterruptedException {
+        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\chromedriver_win32\\chromedriver.exe");
+        WebDriver driver = new ChromeDriver();
+
+        String url = "https://openweathermap.org/";
+
+        driver.get(url); //открыть ссылку
+        Thread.sleep(10000);
+        driver.manage().window().maximize(); //раскрыть полное окно
+        Thread.sleep(2000);
+
+        WebElement imageBanner = driver.findElement( //найти элемент Imperial: °F
+                By.xpath("//img[@src = '/themes/openweathermap/assets/img/logo_white_cropped.png']")
+        );
+        imageBanner.click();
+        Thread.sleep(5000);
+
+        String expectedResult = url;
+        String actualResult = driver.getCurrentUrl();
+        Assert.assertEquals(actualResult, expectedResult);
+        driver.quit(); // закрыть сессию
+    }
+
+    /*TC_11_09
+1.  Открыть базовую ссылку
+2.  В строке поиска в навигационной панели набрать “Rome”
+3.  Нажать клавишу Enter
+4.  Подтвердить, что вы перешли на страницу в ссылке которой содержатся слова “find” и “Rome”
+5. Подтвердить, что в строке поиска на новой странице вписано слово “Rome” */
+
+    @Test
+    public void findRome() throws InterruptedException {
+        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\chromedriver_win32\\chromedriver.exe");
+        WebDriver driver = new ChromeDriver();
+
+        String url = "https://openweathermap.org/";
+        String searchCity = "Rome";
+        String searchFind = "find";
+
+        driver.get(url); //открыть ссылку
+        Thread.sleep(10000);
+        driver.manage().window().maximize(); //раскрыть полное окно
+        Thread.sleep(2000);
+
+        WebElement searchLine = driver.findElement(
+                By.xpath("//div[@id = 'desktop-menu']//input[@type = 'text']")
+        );
+        searchLine.click();
+        Thread.sleep(2000);
+        searchLine.sendKeys(searchCity);
+        searchLine.sendKeys(Keys.ENTER);
+
+        String newUrl = driver.getCurrentUrl();
+        Boolean actualResult;
+        if (newUrl.contains(searchCity) && newUrl.contains(searchFind)) {
+            actualResult = true;
+        } else {
+            actualResult = false;
+        }
+        Boolean expectedResult = true;
+
+        Assert.assertEquals(actualResult,expectedResult);
+
+        String actualResultSearchCity = driver.findElement(
+                By.xpath("//input[@class]")
+        ).getAttribute("value"); // поиск текста в атрибуте
+        String expectedResultSearchCity = "Rome";
+        Assert.assertEquals(actualResultSearchCity,expectedResultSearchCity);
+        driver.quit(); // закрыть сессию
+    }
+
+    /*TC_11_10
+1.  Открыть базовую ссылку
+2.  Нажать на пункт меню API
+3.  Подтвердить, что на открывшейся странице пользователь видит 30 оранжевых кнопок*/
+
+    @Test
+    public void findThirtyOrangeButtons() throws InterruptedException {
+        System.setProperty("webdriver.chrome.driver", "C:\\Program Files\\chromedriver_win32\\chromedriver.exe");
+        WebDriver driver = new ChromeDriver();
+
+        String url = "https://openweathermap.org/";
+        int expectedResult = 30;
+
+        driver.get(url); //открыть ссылку
+        Thread.sleep(10000);
+        driver.manage().window().maximize(); //раскрыть полное окно
+        Thread.sleep(2000);
+
+        WebElement apiMenu = driver.findElement(
+                By.xpath("//div[@id = 'desktop-menu']//li//a[@href='/api']")
+        );
+        apiMenu.click();
+        Thread.sleep(2000);
+
+        int actualResult = driver.findElements(
+                By.xpath("//a[contains(@class,'orange')]")
+        ).size();
+
+        Assert.assertEquals(actualResult,expectedResult);
+
+        driver.quit();
+    }
+
+    
 }
